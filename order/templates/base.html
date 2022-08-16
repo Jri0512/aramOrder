@@ -1,0 +1,28 @@
+{% load static %}
+<!doctype html>
+<html lang="ko">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" type="text/css" href="{% static 'bootstrap.min.css' %}">
+    <!-- main CSS-->
+    <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
+    <title>게시판</title>
+</head>
+<body>
+<!-- 네비게이션바 -->
+{% include "navbar.html" %}
+<!-- 기본 템플릿 삽입 내용 -->
+{% block content %}
+{% endblock %}
+<!-- 기본 템플릿 삽입 내용 끝-->
+<!-- 부트스트랩js -->
+<script src="{% static 'bootstrap.min.js' %}"></script>
+<!-- 자바스크립트 부분-->
+{% block script %}
+{% endblock %}
+<!-- 자바스크립트 부분-->
+</body>
+</html>
