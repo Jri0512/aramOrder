@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container my-3">
+    <form method="post" action="{% url 'main:fruitlist_create' %}">
+        {% csrf_token %}
+        {% include "form_errors.html" %}
+            <!-- <div class="col-md-6"></div> -->
+        <div class="row">
+            <label for="fruitName">과일명 이름</label>
+            <input type="text" class="form-control" name="fruit_name" id="fruit_name"
+                    value="{{ form.fruitName.value|default_if_none:'' }}">
+
+            <label for="price">가격</label>
+            <input type="text" class="form-control" name="price" id="price"
+                    value="{{ form.price.value|default_if_none:'' }}">
+
+            <label for="quantity">수량</label>
+            <input type="text" class="form-control" name="quantity" id="quantity"
+                    value="{{ form.quantity.value|default_if_none:'' }}">
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary" style="float:right;">과일등록</button>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="container">
+    <div class="row">
+        <div class="col-md-10"></div>
+        <div class="col-md-2">
+            <button class="btn btn-danger" onclick="deleteFruitList()" style="width:60px; float:right;">삭제</button>
+        </div>
+    </div>
+</div>
+<div class="container">
+    <div class="mt-3" id="fruitlistGrid"></div>
+</div>
+    <script type="text/javascript">
+        var fruitlistResult;
+        axios.get('fruitList/gridlist')
+        .then(resultData);
+        console.log("hi");
+        var checkedData = [];
+        function resultData(response){
+            fruitlistResult = response.data.fruitlist_list;
+            fruitlistGrid.resetData(fruitlistResult);
+            console.log("hihi");
+        }
+
+        var fruitlistGrid = new tui.Grid({
+            el: document.getElementById('fruitlistGrid'),
+            scrollX: false,
+            scorllY: false, 
+            rowHeaders: ['rowNum', 'checkbox'],
+            columns: [
+                {
+                    title: '과일 명',
+                    name: 'fruit_name',
+                    editor: 'text',
+                    align: 'center',
+                },
+                {
+                    title: '가격',
+                    name: 'price',
+                    editor: 'text',
+                    align: 'center',
+                },
+                {
+                    title: '수량',
+                    name: 'quantity',
+                    editor: 'text',
+                    align: 'center',
+                },
+            ],
+            
+        });
+        tui.Grid.applyTheme('clean');
+        fruitlistGrid.on('check', (e) => {
+            checkedData.push(e.rowKey);
+        });
+        function deleteFruitList() {
+            if(confirm("삭제하시겠습니까?")) {
+                const set = new Set(checkedData);
+                const fowardedArr = [...set];
+                let paramArr = [];
+                fowardedArr.forEach(e=>{
+                    paramArr.push(fruitlistResult[e].id);
+                })
+                axios.post('fruitList/delete/', paramArr, {xsrfCookieName: 'csrftoken', xrfHeaderName: 'X-CSRFToken'})
+                .then((response) => {
+                    if(response.data.message) {
+                        alert(response.data.message);
+                    }
+                    checkedData = [];
+                    axios.get('fruitList/gridlist')
+                    .then(resultData);
+                })
+                .catch((error) => {
+                });
+            }
+        }
+        fruitlistGrid.on('beforChange', e => {
+            console.log('beforChange :', e);
+        });
+
+        fruitlistGrid.on('afterChange', e => {
+            //axios 날릴 id
+            const id = fruitlistResult[e.changes[0].rowKey].id;
+            const fruit_name = fruitlistResult[e.changes[0].rowKey].fruit_name;
+            const price = fruitlistResult[e.changes[0].rowKey].price;
+            const quantity = fruitlistResult[e.changes[0].rowKey].quantity;
+            const key = e.changes[0].columnName;
+            const value = e.changes[0].value;
+
+            let requestData = {};
+            requestData.id = id;
+            requestData.fruit_name = fruit_name;
+            requestData.price = price;
+            requestData.quantity = quantity;
+            requestData[key] = value;
+            axios.post('fruitList/modify/', requestData, {xsrfCookieName: 'csrftoken', xrfHeaderName: 'X-CSRFToken'})
+            .then((response) => {
+            })
+            .catch((error) => {
+            });
+        })
+    </script>
+{% endblock %}

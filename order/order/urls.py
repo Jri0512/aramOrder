@@ -16,13 +16,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 from django.conf import settings
-from main.views import base_views
+from main.views import fruitlist_views
 
 urlpatterns = [
     path('main/', include('main.urls')),
     path('admin/', admin.site.urls),
     path('common/', include('common.urls')),
-    path('', base_views.index, name='index')
+    path('', fruitlist_views.index, name='index')
 ]
 
 if settings.DEBUG:

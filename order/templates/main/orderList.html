@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container my-3">
+    {% if orderlistModifySelectResult %}
+    <form method="post" action="{% url 'main:orderinfo_modify' orderlistModifySelectResult.0.id %}">
+        {% csrf_token %}
+        {% include "form_errors.html" %}
+        <div class="mb-3">
+            <div class="row">
+                <div class="col-md">
+                    <label for="customer_name">고객명</label>
+                    <input readonly type="text" class="form-control" name="customer_name" id="customer_name"
+                        value="{{ orderlistModifySelectResult.0.cn }}">
+                </div>
+                {% for omr in orderlistModifySelectResult %}
+                <div class="col-md">
+                    <label for="fruit_name">{{omr.fn}}</label>
+                    <input type="text" class="form-control" name="{{omr.modid}}" id="{{omr.fn}}"
+                        value="{{ omr.qn|default_if_none:'' }}">
+                </div>
+                {% endfor %}
+            </row>
+        </div>
+        <div class="my-3" style="float:right;">
+            <button type="submit" class="btn btn-success">주문수정</button>
+            <button type="button" class="btn btn-danger" onclick="deleteOrderList('{{orderlistModifySelectResult.0.id}}')">주문삭제</button>
+            <button type="button" class="btn btn-primary" onclick="location.href='/main/orderlist/'">취소</button>
+        </div>
+    </form>
+    {% elif fruitlist_list %}
+    <form method="post" action="{% url 'main:orderlist_create' %}">
+        {% csrf_token %}
+        {% include "form_errors.html" %}
+        <div class="mb-3">
+            <div class="row">
+                <div class="col-md">
+                    <label for="customer_name">고객명</label>
+                    <input type="text" class="form-control" name="customer_name" id="customer_name"
+                        value="{{ form.customer_name.value|default_if_none:'' }}">
+                </div>
+                
+                {% for fruitlist in fruitlist_list %}
+                <div class="col-md">
+                    <label for="fruit_name">{{fruitlist.fruit_name}}</label>
+                    <input type="text" class="form-control" name="{{fruitlist.fruit_name}}" id="{{fruitlist.fruit_name}}"
+                        value="{{ form.fruit_name.value|default_if_none:'' }}">
+                </div>
+                {% endfor %}
+            </row>
+        </div>
+    <button type="submit" class="btn btn-primary my-3" style="float:right;" onclick="location.reload();">주문등록</button>    
+    </form>
+    {% else %}
+    <div class="text-center">출력할 주문서 정보가 없습니다.</div>
+    {% endif %}
+    <table class="table table-bordered">
+        <tbody>
+            {% if fruitlist_list %}
+            <tr class="text-center">
+                <td rowspan="5" style="vertical-align : middle; width: 8%;">닉네임</td>
+                <!-- <th style="width:50%">제목</th> -->
+                <td style="width:10%;">종류</td>
+                {% for fruitlist in fruitlist_list %}    
+                <td>{{ fruitlist.fruit_name }}</td>
+                {% endfor %}
+                <td rowspan="5" style="vertical-align : middle; width:10%;">구매금액</td>
+            </tr>
+            <tr class="text-center">
+                <td style="width:10%;">가격</td>
+                {% for fruitlist in fruitlist_list %}    
+                <td>{{ fruitlist.price }}</td>
+                {% endfor %}
+            </tr>
+            <tr class="text-center">
+                <td style="width:10%;">총수량</td>
+                {% for fruitlist in fruitlist_list %}    
+                <td>{{ fruitlist.quantity }}</td>
+                {% endfor %}
+            </tr>
+            <tr class="text-center">
+                <td style="width:10%;">주문수량</td>
+                {% for fruitlist in fruitlist_list %}    
+                <td>{{ fruitlist.oq }}</td>
+                {% endfor %}
+            </tr>
+            <tr class="text-center">
+                <td style="width:10%;">남은수량</td>
+                {% for fruitlist in fruitlist_list %}    
+                <td>{{ fruitlist.stock }}</td>
+                {% endfor %}
+            </tr>
+            {% endif %}
+            {% if orderlistResult %}
+            {% for orderlist in orderlistResult %}
+            {% if orderlist.cn == orderlistModifySelectResult.0.cn %}
+            <tr class="text-center" style="background-color:#e9ecef;">
+            {% else %}
+            <tr class="text-center">
+            {% endif %}
+                <td colspan="2">
+                    <a href="{% url 'main:orderinfo_modify_select' orderlist.id %}">{{orderlist.cn}}</a>
+                </td>
+                {% for quantity in orderlist.oq %}
+                <td>{{quantity}}</td>
+                {% endfor %}
+                <td>{{orderlist.tp}}</td>
+            </tr>
+            {% endfor %}
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+<script type="text/javascript">
+
+    document.getElementsByName("reload").onclick = function () {
+        
+        location.href='/main/orderlist/'
+    }
+
+    function deleteOrderList(id) {
+        if(confirm("주문내역을 삭제 하시겠습니까?")){
+            axios.post('/main/orderlist/delete/'+ id +'/')
+            .then((response) => {
+                alert("삭제 완료");
+                location.reload();
+            })
+            .catch((error) => {
+            });
+        }
+    }
+</script>
+{% endblock %}

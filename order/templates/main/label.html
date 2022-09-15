@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container my-3">
+    <div class="row"> 
+        {% if customerOrderResult %}
+        {% for cs in customerOrderResult %}
+        <div class="col-md-4">
+            <table class="table table-bordered">
+                <thead class="text-center">
+                    <tr>
+                        <th>{{forloop.counter}}</th>
+                        <th colspan="3">{{cs.cn}}</th>
+                    </tr>
+                    <tr>
+                        <th colspan="2">품목</th>
+                        <th>수량</th>
+                        <th>주문금액</th>
+                    </tr>
+                </thead>
+                {% if labelListResult %}
+                <tbody>
+                    {% for lb in labelListResult %}
+                    {% if cs.id == lb.id %}
+                    <tr>
+                        <td>
+                            {{lb.num}}
+                        </td>
+                        <td>
+                            {{lb.fn}}
+                        </td>
+                        <td>
+                            {{lb.oq}}
+                        </td>
+                        <td>
+                            {{lb.pp}}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                    {% for tp in totalPriceResult %}
+                    {% if cs.id == tp.id %}
+                    <tr>
+                        <td colspan="2">총계</td>
+                        <td>{{tp.cnt}}</td>
+                        <td>{{tp.tp}}</td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+                {% endif %}
+            </table>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="text-center">출력할 라벨 정보가 없습니다.</div>
+        {% endif %}
+    </div>
+    
+
+{% endblock %}
