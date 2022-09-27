@@ -38,12 +38,10 @@
         var fruitlistResult;
         axios.get('fruitList/gridlist')
         .then(resultData);
-        console.log("hi");
         var checkedData = [];
         function resultData(response){
             fruitlistResult = response.data.fruitlist_list;
             fruitlistGrid.resetData(fruitlistResult);
-            console.log("hihi");
         }
 
         var fruitlistGrid = new tui.Grid({
@@ -76,6 +74,13 @@
         tui.Grid.applyTheme('clean');
         fruitlistGrid.on('check', (e) => {
             checkedData.push(e.rowKey);
+        });
+        fruitlistGrid.on('checkAll', (e) => {
+            console.log('checkAll의 e값 : ', e);
+            (e.instance.store.data.rawData).forEach( f => {
+                checkedData.push(f.rowKey);
+            })
+
         });
         function deleteFruitList() {
             if(confirm("삭제하시겠습니까?")) {

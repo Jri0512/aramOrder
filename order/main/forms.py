@@ -1,28 +1,5 @@
 from django import forms
-from main.models import Question, Answer, FruitList, Customer, OrderInfo, OrderDetail
-
-
-class QuestionForm(forms.ModelForm):
-    class Meta:
-        model = Question  # 사용할모델
-        fields = ['subject', 'content']  # QuestionForm에서 사용할 Question모델으 속성
-        # widgets = {
-        #     'subject': forms.TextInput(attrs={'class': 'form-control'}),
-        #     'content': forms.TextInput(attrs={'class': 'form-control', 'rows': 10})
-        # }
-        labels = {
-            'subject': '제목',
-            'content': '내용',
-        }
-
-
-class AnswerForm(forms.ModelForm):
-    class Meta:
-        model = Answer
-        fields = ['content']
-        labels = {
-            'content': '답변내용',
-        }
+from main.models import FruitList, Customer, OrderInfo, OrderDetail
 
 
 class FruitListForm(forms.ModelForm):

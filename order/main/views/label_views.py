@@ -10,7 +10,8 @@ def index(request):
     SELECT 
         moi.id,
         moi.customer_id, 
-        mc.customer_name as cn 
+        mc.customer_name as cn,
+        RANK () over ( order by moi.create_date) as num
     FROM 
         main_orderinfo moi 
             LEFT OUTER JOIN main_customer mc
@@ -32,8 +33,11 @@ def index(request):
 	    mc.customer_name as cn,
 	    mf.fruit_name as fn,
 	    mf.price as pc,
-	    mod.order_quantity as oq, 
-	    mod.order_quantity * mf.price as pp, 
+	    mod.order_quantity as oq,
+        CASE
+	        WHEN mod.order_quantity * mf.price = 0 THEN '-'
+            WHEN mod.order_quantity * mf.price > 0 THEN mod.order_quantity * mf.price
+            END as pp,
 	    (SELECT 
             sum(mf2.price * mod2.order_quantity) 
         FROM 
@@ -71,6 +75,16 @@ def index(request):
     '''
 
     labelListResult = OrderDetail.objects.raw(labelListResultQuery)
+    labelMoreLen = []
+    if len(labelListResult) > 0:
+        labelLenCheckId = labelListResult[0].id
+        labelLenSelect = OrderDetail.objects.filter(
+            orderinfo_id=labelLenCheckId)
+        if len(labelLenSelect) < 11:
+            idx = 0
+            for i in range(11 - len(labelLenSelect)):
+                labelMoreLen.append(len(labelLenSelect) + 1 + idx)
+                idx += 1
 
     totalPriceResultQuery = '''
         SELECT
@@ -96,12 +110,8 @@ def index(request):
 
     totalPriceResult = OrderDetail.objects.raw(totalPriceResultQuery)
 
-    # if len(labelListResult) < 11:
-    #     arg = 11 - len(labelListResult)
-    #     for i in range(arg):
-    #         labelListResult.append(None)
-    # elif len(labelListResult) >= 11
     context = {'labelListResult': labelListResult,
                'customerOrderResult': customerOrderResult,
-               'totalPriceResult': totalPriceResult}
+               'totalPriceResult': totalPriceResult,
+               'labelMoreLen': labelMoreLen}
     return render(request, 'main/label.html', context)

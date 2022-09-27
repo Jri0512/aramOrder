@@ -12,13 +12,50 @@
                     <input readonly type="text" class="form-control" name="customer_name" id="customer_name"
                         value="{{ orderlistModifySelectResult.0.cn }}">
                 </div>
-                {% for omr in orderlistModifySelectResult %}
+                {% for fl in fruitlist_list %}
                 <div class="col-md">
-                    <label for="fruit_name">{{omr.fn}}</label>
-                    <input type="text" class="form-control" name="{{omr.modid}}" id="{{omr.fn}}"
+                    <label for="fruit_name">{{fl.fruit_name}}</label>
+                    {% for omr in orderlistModifySelectResult %}
+                    {% if fl.id == omr.fid %}
+                    <input type="text" class="form-control" name="{{omr.mfid}}" id="{{omr.fn}}"
                         value="{{ omr.qn|default_if_none:'' }}">
+                    {% elif omr.fid == None %}
+                    <input type="text" class="form-control" name="{{fl.id}}" id="{{fl.fruit_name}}"
+                        value="{{ form.fruit_name.value|default_if_none:'' }}">
+                    {% endif %}
+                    {% endfor %}
                 </div>
                 {% endfor %}
+                <div class="col-md">
+                    <label for="payment_method">결제방식</label>
+                    <select class="form-select" name="payment_method">
+                        {% if orderlistModifySelectResult.0.pmi == 1 %}
+                        <option value="1" selected>결제완료</option>
+                        <option value="2">결제대기</option>
+                        {% elif orderlistModifySelectResult.0.pmi == 2 %}
+                        <option value="1">결제완료</option>
+                        <option value="2" selected>결제대기</option>
+                        {% endif %}
+                    </select>
+                </div>
+                <div class="col-md">
+                    <label for="shipping_type">배송방식</label>
+                    <select class="form-select" name="shipping_type">
+                        {% if orderlistModifySelectResult.0.sti == 3 %}
+                        <option value="3" selected>방문수령</option>
+                        <option value="4">야간수령</option>
+                        <option value="5">한결수령</option>
+                        {% elif orderlistModifySelectResult.0.sti == 4 %}
+                        <option value="3">방문수령</option>
+                        <option value="4" selected>야간수령</option>
+                        <option value="5">한결수령</option>
+                        {% elif orderlistModifySelectResult.0.sti == 5 %}
+                        <option value="3">방문수령</option>
+                        <option value="4">야간수령</option>
+                        <option value="5" selected>한결수령</option>
+                        {% endif %}
+                    </select>
+                </div>
             </row>
         </div>
         <div class="my-3" style="float:right;">
@@ -46,62 +83,82 @@
                         value="{{ form.fruit_name.value|default_if_none:'' }}">
                 </div>
                 {% endfor %}
+                <div class="col-md">
+                    <label for="payment_method">결제방식</label>
+                    <select class="form-select" name="payment_method">
+                        <option value="1">결제대기</option>
+                        <option value="2">결제완료</option>
+                    </select>
+                </div>
+                <div class="col-md">
+                    <label for="shipping_type">배송방식</label>
+                    <select class="form-select" name="shipping_type">
+                        <option value="3">방문수령</option>
+                        <option value="4">야간수령</option>
+                        <option value="5">한결수령</option>
+                    </select>
+                </div>
             </row>
         </div>
+        {% if validationError %}
+        <strong>{{validationError}}</strong>
+        {% endif %}
     <button type="submit" class="btn btn-primary my-3" style="float:right;" onclick="location.reload();">주문등록</button>    
     </form>
     {% else %}
     <div class="text-center">출력할 주문서 정보가 없습니다.</div>
     {% endif %}
-    <table class="table table-bordered">
-        <tbody>
+    <table class="table table-bordered table-striped table-hover">
+        <thead>
             {% if fruitlist_list %}
-            <tr class="text-center">
-                <td rowspan="5" style="vertical-align : middle; width: 8%;">닉네임</td>
+            <tr class="text-center border-3 border-dark">
+                <td class="border-3 border-end-0 border-dark" rowspan="5" style="vertical-align : middle; width: 8%;">닉네임</td>
                 <!-- <th style="width:50%">제목</th> -->
-                <td style="width:10%;">종류</td>
+                <td class="border-3 border-dark" style="width:10%;">종류</td>
                 {% for fruitlist in fruitlist_list %}    
-                <td>{{ fruitlist.fruit_name }}</td>
+                <td class="border-3 border-bottom-0 boroder-top-0 border-dark">{{ fruitlist.fruit_name }}</td>
                 {% endfor %}
-                <td rowspan="5" style="vertical-align : middle; width:10%;">구매금액</td>
+                <td class="border-3 border-dark" rowspan="5" style="vertical-align : middle; width:10%;">구매금액</td>
             </tr>
-            <tr class="text-center">
-                <td style="width:10%;">가격</td>
+            <tr class="text-center" style="border-bottom:1px !important;">
+                <td class="border-3 border-dark" style="width:10%; border-bottom:1px !important;">가격</td>
                 {% for fruitlist in fruitlist_list %}    
-                <td>{{ fruitlist.price }}</td>
-                {% endfor %}
-            </tr>
-            <tr class="text-center">
-                <td style="width:10%;">총수량</td>
-                {% for fruitlist in fruitlist_list %}    
-                <td>{{ fruitlist.quantity }}</td>
+                <td class="border-3 border-top-0 border-bottom-0 border-dark" style="border-top:1px solid !important;">{{ fruitlist.price }}</td>
                 {% endfor %}
             </tr>
             <tr class="text-center">
-                <td style="width:10%;">주문수량</td>
+                <td class="border-3 border-dark" style="width:10%;">총수량</td>
                 {% for fruitlist in fruitlist_list %}    
-                <td>{{ fruitlist.oq }}</td>
+                <td class="border-3 border-top-0 border-bottom-0 border-dark" style="border-top:1px solid !important;">{{ fruitlist.quantity }}</td>
                 {% endfor %}
             </tr>
             <tr class="text-center">
-                <td style="width:10%;">남은수량</td>
+                <td class="border-3 border-dark" style="width:10%;">주문수량</td>
                 {% for fruitlist in fruitlist_list %}    
-                <td>{{ fruitlist.stock }}</td>
+                <td class="border-3 border-top-0 border-bottom-0 border-dark" style="border-top:1px solid !important;">{{ fruitlist.oq }}</td>
                 {% endfor %}
             </tr>
+            <tr class="text-center">
+                <td class="border-3 border-dark" style="width:10%;">남은수량</td>
+                {% for fruitlist in fruitlist_list %}    
+                <td class="border-3 border-top-0 border-dark" style="border-top:1px solid !important;">{{ fruitlist.stock }}</td>
+                {% endfor %}
+            </tr>
+        </thead>
             {% endif %}
             {% if orderlistResult %}
+        <tbody class="border-3 border-dark">
             {% for orderlist in orderlistResult %}
             {% if orderlist.cn == orderlistModifySelectResult.0.cn %}
-            <tr class="text-center" style="background-color:#e9ecef;">
+            <tr class="text-center" style="background-color:#9c9d9e;">
             {% else %}
-            <tr class="text-center">
+            <tr class="text-center"> 
             {% endif %}
-                <td colspan="2">
-                    <a href="{% url 'main:orderinfo_modify_select' orderlist.id %}">{{orderlist.cn}}</a>
+                <td colspan="2" class="border-3 border-top-0 border-bottom-0 border-dark">
+                    <a href="{% url 'main:orderinfo_modify_select' orderlist.id %}">{{orderlist.cn}}</a><div style="font-size:3px;">{{orderlist.pmn}}/{{orderlist.stn}}</div>
                 </td>
                 {% for quantity in orderlist.oq %}
-                <td>{{quantity}}</td>
+                <td>{{quantity|default_if_none:'0'}}</td>
                 {% endfor %}
                 <td>{{orderlist.tp}}</td>
             </tr>

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container my-3">
+<div class="container my-3" id="print">
     <div class="row"> 
         {% if customerOrderResult %}
         {% for cs in customerOrderResult %}
@@ -8,7 +8,7 @@
             <table class="table table-bordered">
                 <thead class="text-center">
                     <tr>
-                        <th>{{forloop.counter}}</th>
+                        <th>{{cs.num}}</th>
                         <th colspan="3">{{cs.cn}}</th>
                     </tr>
                     <tr>
@@ -37,6 +37,25 @@
                     </tr>
                     {% endif %}
                     {% endfor %}
+                    {% if labelMoreLen %}
+                    {% for lm in labelMoreLen %}
+                    <tr>
+                        <td>
+                            {{ lm }}
+                        </td>
+                        <td>
+                            -
+                        </td>
+                        <td>
+                            0
+                        </td>
+                        <td>
+                            -
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% endif %}
+
                     {% for tp in totalPriceResult %}
                     {% if cs.id == tp.id %}
                     <tr>
@@ -55,6 +74,28 @@
         <div class="text-center">출력할 라벨 정보가 없습니다.</div>
         {% endif %}
     </div>
-    
+</div>
+<script type="text/javascript">
+    var initBodyHtml;
 
+    function printPage() {
+         window.print(0);
+    }
+    function beforPrint() {
+        initBodyHtml = document.body.innerHTML;
+        document.body.innerHTML = document.getElementById('print').innerHTML;
+    }
+    function afterPrint() {
+        document.body.innerHTML = initBodyHtml;
+    }
+
+    window.onbeforeprint = beforPrint;
+    window.onafterprint = afterPrint;
+
+</script>
+<style type="text/css">
+    @media print {
+        .page-break { page-break-inside:avoid; page-break-after:auto }
+    }
+</style>
 {% endblock %}

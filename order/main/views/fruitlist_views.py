@@ -5,7 +5,7 @@ from django.utils import timezone
 from django.http import JsonResponse
 from django.db.models.deletion import ProtectedError
 from main.forms import FruitListForm
-from main.models import FruitList
+from main.models import FruitList, OrderDetail
 import datetime
 import json
 
@@ -40,33 +40,11 @@ def fruitlist_jsonconvert(fruitlist):
     output["fruit_name"] = fruitlist.fruit_name
     output["price"] = fruitlist.price
     output["quantity"] = fruitlist.quantity
-    # output["create_date"] = fruitlist.create_date.strftime(
-    #     "%m/%d/%Y, %H:%M:%S")
-    # if (fruitlist.modify_date != None):
-    #     output["modify_date"] = fruitlist.modify_date.strftime(
-    #         "%m/%d/%Y, %H:%M:%S")
-    # else:
-    #     output["modify_date"] = fruitlist.modify_date
-
     return output
 
 
 @login_required(login_url='common:login')
 def index(request):
-    # page = request.GET.get('page', '1')  # 페이지
-    # kw = request.GET.get('kw', '')
-    # fruitlist_list = FruitList.objects.order_by('-create_date')
-    # if kw:
-    #     question_list = question_list.filter(
-    #         Q(subject__icontains=kw) |
-    #         Q(content__icontains=kw) |
-    #         Q(answer__content__icontains=kw) |
-    #         Q(author__username__icontains=kw) |
-    #         Q(answer__author__username__icontains=kw)
-    #     ).distinct()
-    # paginator = Paginator(question_list, 10)  # 페이지당 10개씩
-    # page_obj = paginator.get_page(page)
-    # context = {'question_list': page_obj, 'page': page, 'kw': kw}
     return render(request, 'main/fruitlist.html')
 
 
@@ -79,6 +57,28 @@ def fruitlist_create(request):
             fruitlist.author = request.user
             fruitlist.create_date = timezone.now()
             fruitlist.save()
+
+            fruitName = request.POST['fruit_name']
+            fn = FruitList.objects.filter(fruit_name=fruitName, create_date__range=[
+                datetime.datetime.now().strftime("%Y-%m-%d 00:00:00"), datetime.datetime.now().strftime("%Y-%m-%d 23:59:59")])
+            fnid = ''
+            for i in fn:
+                print(i.id)
+                fnid = i.id
+
+            query = '''select count(*), orderinfo_id as id from 
+                (select count(*), orderinfo_id from main_orderdetail mod
+                where  fruitlist_id=%s and create_date BETWEEN datetime('now', 'start of day') AND datetime('now', 'localtime', '+1 Minute') group by orderinfo_id HAVING count(*) != 0
+                union all
+                select count(*), orderinfo_id from main_orderdetail mod2
+                where  fruitlist_id!=%s and create_date BETWEEN datetime('now', 'start of day') AND datetime('now', 'localtime', '+1 Minute') group by orderinfo_id) A group by orderinfo_id having count(*) = 1'''
+            orderDetailResult = OrderDetail.objects.raw(query, [fnid, fnid])
+            print(len(orderDetailResult))
+            if len(orderDetailResult) > 0:
+                print(i)
+                for i in orderDetailResult:
+                    OrderDetail.objects.create(
+                        author=request.user, orderinfo_id=i.id, fruitlist_id=fnid, order_quantity=0)
             return redirect('main:index')
     else:
         form = FruitListForm()
