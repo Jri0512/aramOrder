@@ -20,8 +20,44 @@ def orderlist_index(request):
             loopRangeNum = len(fruitlist_list) - len(e.oq)
             for i in range(loopRangeNum):
                 e.oq.append(0)
-    return render(request, 'main/orderlist.html')
-    # return render(request, 'main/orderlist.html', context)
+    return render(request, 'main/orderlist.html', context)
+
+# 과일명 및 총수량+재고수량
+
+
+@login_required(login_url='common:login')
+def fruitlist_quantity_select(request):
+    query = '''select mf.id, mf.fruit_name, mf.quantity, mf.price, IFNULL(SUM(mod.order_quantity),0) as oq, IFNULL((mf.quantity - sum(mod.order_quantity)),mf.quantity) as stock ,  mf.create_date from main_fruitlist as mf
+            left outer join main_orderdetail as mod
+            on mf.id = mod.fruitlist_id
+			where mf.create_date BETWEEN datetime('now', 'start of day') AND datetime('now', 'localtime', '+1 Minute')
+			group by mf.id'''
+
+    fruitQuantityResult = FruitList.objects.raw(query)
+    return fruitQuantityResult
+
+# 고객별 주문내역
+
+
+@login_required(login_url='common:login')
+def orderlist_select(requst):
+    query = '''select moi.id, mc.customer_name as cn, group_concat(IFNULL(mod.order_quantity,0),',') as oq, sum(mod.order_quantity * mf.price) as tp, mod.create_date as cd, ma.name as pmn, ma2.name as stn from main_orderdetail as mod
+            left outer join main_orderinfo as moi on moi.id = mod.orderinfo_id
+            left outer join main_customer as mc on mc.id = moi.customer_id
+            left outer join main_fruitlist as mf on mf.id = mod.fruitlist_id
+			left outer join main_aramcode as ma on ma.id = moi.payment_method_id
+			left outer join main_aramcode as ma2 on ma2.id = moi.shipping_type_id
+			where mod.create_date BETWEEN datetime('now', 'start of day') AND datetime('now', 'localtime', '+1 Minute')
+            group by mc.customer_name'''
+
+    orderListResult = OrderDetail.objects.raw(query)
+    for i, e in enumerate(orderListResult):
+        temp = []
+        oqArr = (e.oq).split(',')
+        for j in oqArr:
+            temp.append(j)
+        e.oq = temp
+    return orderListResult
 
 
 @login_required(login_url='common:login')
@@ -97,39 +133,6 @@ def orderlist_create(request):
                'orderlistResult': orderlist_select(request),
                'validationError': validationError}
     return render(request, 'main/orderlist.html', context)
-
-
-@login_required(login_url='common:login')
-def orderlist_select(requst):
-    query = '''select moi.id, mc.customer_name as cn, group_concat(IFNULL(mod.order_quantity,0),',') as oq, sum(mod.order_quantity * mf.price) as tp, mod.create_date as cd, ma.name as pmn, ma2.name as stn from main_orderdetail as mod
-            left outer join main_orderinfo as moi on moi.id = mod.orderinfo_id
-            left outer join main_customer as mc on mc.id = moi.customer_id
-            left outer join main_fruitlist as mf on mf.id = mod.fruitlist_id
-			left outer join main_aramcode as ma on ma.id = moi.payment_method_id
-			left outer join main_aramcode as ma2 on ma2.id = moi.shipping_type_id
-			where mod.create_date BETWEEN datetime('now', 'start of day') AND datetime('now', 'localtime', '+1 Minute')
-            group by mc.customer_name'''
-
-    orderListResult = OrderDetail.objects.raw(query)
-    for i, e in enumerate(orderListResult):
-        temp = []
-        oqArr = (e.oq).split(',')
-        for j in oqArr:
-            temp.append(j)
-        e.oq = temp
-    return orderListResult
-
-
-@login_required(login_url='common:login')
-def fruitlist_quantity_select(request):
-    query = '''select mf.id, mf.fruit_name, mf.quantity, IFNULL(SUM(mod.order_quantity),0) as oq, IFNULL((mf.quantity - sum(mod.order_quantity)),mf.quantity) as stock ,  mf.create_date from main_fruitlist as mf
-            left outer join main_orderdetail as mod
-            on mf.id = mod.fruitlist_id
-			where mf.create_date BETWEEN datetime('now', 'start of day') AND datetime('now', 'localtime', '+1 Minute')
-			group by mf.id'''
-
-    fruitQuantityResult = FruitList.objects.raw(query)
-    return fruitQuantityResult
 
 
 @login_required(login_url='common:login')

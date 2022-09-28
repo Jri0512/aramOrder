@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load humanize %}
 {% block content %}
 <div class="container my-3">
     {% if orderlistModifySelectResult %}
@@ -123,7 +124,7 @@
             <tr class="text-center" style="border-bottom:1px !important;">
                 <td class="border-3 border-dark" style="width:10%; border-bottom:1px !important;">가격</td>
                 {% for fruitlist in fruitlist_list %}    
-                <td class="border-3 border-top-0 border-bottom-0 border-dark" style="border-top:1px solid !important;">{{ fruitlist.price }}</td>
+                <td class="border-3 border-top-0 border-bottom-0 border-dark" style="border-top:1px solid !important;">{{ fruitlist.price|intcomma }}</td>
                 {% endfor %}
             </tr>
             <tr class="text-center">
@@ -160,7 +161,7 @@
                 {% for quantity in orderlist.oq %}
                 <td>{{quantity|default_if_none:'0'}}</td>
                 {% endfor %}
-                <td>{{orderlist.tp}}</td>
+                <td>{{orderlist.tp|intcomma}}</td>
             </tr>
             {% endfor %}
             {% endif %}

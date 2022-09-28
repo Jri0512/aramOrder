@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
+{% load humanize %}
 <div class="container my-3" id="print">
     <div class="row"> 
         {% if customerOrderResult %}
@@ -32,7 +33,7 @@
                             {{lb.oq}}
                         </td>
                         <td>
-                            {{lb.pp}}
+                            {{lb.pp|intcomma}}
                         </td>
                     </tr>
                     {% endif %}
@@ -61,7 +62,7 @@
                     <tr>
                         <td colspan="2">총계</td>
                         <td>{{tp.cnt}}</td>
-                        <td>{{tp.tp}}</td>
+                        <td>{{tp.tp|intcomma}}</td>
                     </tr>
                     {% endif %}
                     {% endfor %}

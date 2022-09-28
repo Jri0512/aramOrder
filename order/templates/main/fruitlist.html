@@ -41,6 +41,9 @@
         var checkedData = [];
         function resultData(response){
             fruitlistResult = response.data.fruitlist_list;
+            fruitlistResult.forEach( e=> {
+                e.price = e.price.toLocaleString();
+            });
             fruitlistGrid.resetData(fruitlistResult);
         }
 
@@ -76,7 +79,6 @@
             checkedData.push(e.rowKey);
         });
         fruitlistGrid.on('checkAll', (e) => {
-            console.log('checkAll의 e값 : ', e);
             (e.instance.store.data.rawData).forEach( f => {
                 checkedData.push(f.rowKey);
             })
@@ -104,11 +106,10 @@
             }
         }
         fruitlistGrid.on('beforChange', e => {
-            console.log('beforChange :', e);
+            // console.log('beforChange :', e);
         });
 
         fruitlistGrid.on('afterChange', e => {
-            //axios 날릴 id
             const id = fruitlistResult[e.changes[0].rowKey].id;
             const fruit_name = fruitlistResult[e.changes[0].rowKey].fruit_name;
             const price = fruitlistResult[e.changes[0].rowKey].price;
