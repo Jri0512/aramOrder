@@ -1,0 +1,13 @@
+order/main/__pycache__/
+
+order/main/views/__pycache__/
+
+order/order/__pycache__/
+
+order/main/__pycache__/
+
+order/main/views/__pycache__/
+
+order/main/migrations/
+
+order/common/__pycache__/
