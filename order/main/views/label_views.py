@@ -1,10 +1,15 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from main.models import OrderDetail, OrderInfo
+from main.views import orderlist_views
 
 
 @login_required(login_url='common:login')
 def index(request):
+
+    userInfo = orderlist_views.user_group_check(request.user.id)
+    storePlace = userInfo[0].gid
+    storeName = userInfo[0].gname
 
     customerListResultQuery = '''
     SELECT 
@@ -17,15 +22,18 @@ def index(request):
             LEFT OUTER JOIN main_customer mc
               ON moi.customer_id = mc.id
             WHERE
-                moi.create_date 
+                (moi.create_date 
                     BETWEEN
                         datetime('now', 'start of day') 
                     AND 
-                        datetime('now', 'localtime')
+                        datetime('now', 'localtime'))
+                AND
+                    moi.store_place_id = %s
             ORDER BY moi.create_date
     '''
 
-    customerOrderResult = OrderInfo.objects.raw(customerListResultQuery)
+    customerOrderResult = OrderInfo.objects.raw(
+        customerListResultQuery, [storePlace])
 
     labelListResultQuery = '''
     SELECT 
@@ -67,14 +75,18 @@ def index(request):
             LEFT OUTER JOIN main_fruitlist as mf 
                 ON mf.id = mod.fruitlist_id
         WHERE 
-            mod.create_date 
+            (mod.create_date 
                 BETWEEN 
                     datetime('now', 'start of day') 
                 AND 
                     datetime('now', 'localtime')
+            )
+            AND
+                moi.store_place_id = %s
     '''
 
-    labelListResult = OrderDetail.objects.raw(labelListResultQuery)
+    labelListResult = OrderDetail.objects.raw(
+        labelListResultQuery, [storePlace])
     labelMoreLen = []
     if len(labelListResult) > 0:
         labelLenCheckId = labelListResult[0].id
@@ -100,18 +112,22 @@ def index(request):
 	            LEFT OUTER JOIN main_customer as mc2 
                     ON moi2.customer_id = mc2.id
 	        WHERE 
-                mod2.create_date 
+                (mod2.create_date 
                     BETWEEN 
                         datetime('now', 'start of day') 
                     AND 
-                        datetime('now', 'localtime')
+                        datetime('now', 'localtime'))
+                AND
+                    moi2.store_place_id = %s
             GROUP BY moi2.id
     '''
 
-    totalPriceResult = OrderDetail.objects.raw(totalPriceResultQuery)
+    totalPriceResult = OrderDetail.objects.raw(
+        totalPriceResultQuery, [storePlace])
 
     context = {'labelListResult': labelListResult,
                'customerOrderResult': customerOrderResult,
                'totalPriceResult': totalPriceResult,
-               'labelMoreLen': labelMoreLen}
+               'labelMoreLen': labelMoreLen,
+               'storeName': storeName}
     return render(request, 'main/label.html', context)

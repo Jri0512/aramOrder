@@ -49,23 +49,27 @@
 
         var fruitlistGrid = new tui.Grid({
             el: document.getElementById('fruitlistGrid'),
+            bodyHeight: 500,
             scrollX: false,
             scorllY: false, 
-            rowHeaders: ['rowNum', 'checkbox'],
+            rowHeaders: [{type:'rowNum'},{type:'checkbox'}],
             columns: [
                 {
+                    header: '과일 명',
                     title: '과일 명',
                     name: 'fruit_name',
                     editor: 'text',
                     align: 'center',
                 },
                 {
+                    header: '가격',
                     title: '가격',
                     name: 'price',
                     editor: 'text',
                     align: 'center',
                 },
                 {
+                    header: '수량',
                     title: '수량',
                     name: 'quantity',
                     editor: 'text',
@@ -74,7 +78,7 @@
             ],
             
         });
-        tui.Grid.applyTheme('clean');
+        //tui.Grid.applyTheme('clean');
         fruitlistGrid.on('check', (e) => {
             checkedData.push(e.rowKey);
         });

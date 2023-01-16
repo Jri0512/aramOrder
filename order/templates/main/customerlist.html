@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container my-3">
+    <div class="row">
+        <div class="col-md-10"></div>
+        <div class="col-md-2">
+            <button class="btn btn-danger" onclick="deleteCustomerList()" style="width:60px; float:right;">삭제</button>
+        </div>
+    </div>
+</div>
+<div class="container">
+    <div class="mt-3" id="customerlistGrid"></div>
+</div>
+    <script type="text/javascript">
+        var customerlistResult;
+        axios.get('/main/customerlist/gridlist')
+        .then(resultData);
+        var checkedData = [];
+        function resultData(response){
+            console.log(response.data);
+            customerlistResult = response.data.customerlist_list;
+            customerlistGrid.resetData(customerlistResult);
+        }
+
+        var customerlistGrid = new tui.Grid({
+            bodyHeight: 700,
+            el: document.getElementById('customerlistGrid'),
+            scrollX: false,
+            scorllY: true, 
+            rowHeaders: ['rowNum', 'checkbox'],
+            columns: [
+                {
+                    header: '고객 명',
+                    title: '고객 명',
+                    name: 'customer_name',
+                    editor: 'text',
+                    align: 'center',
+                },
+            ],
+            
+        });
+        // tui.Grid.applyTheme('clean');
+        customerlistGrid.on('check', (e) => {
+            checkedData.push(e.rowKey);
+        });
+        customerlistGrid.on('checkAll', (e) => {
+            (e.instance.store.data.rawData).forEach( f => {
+                checkedData.push(f.rowKey);
+            })
+
+        });
+        function deleteCustomerList() {
+            if(confirm("삭제하시겠습니까? 고객정보와 고객의 모든 주문 내역이 삭제 됩니다.")) {
+                const set = new Set(checkedData);
+                const fowardedArr = [...set];
+                let paramArr = [];
+                fowardedArr.forEach(e=>{
+                    paramArr.push(customerlistResult[e].id);
+                })
+                axios.post('/main/customerList/delete/', paramArr, {xsrfCookieName: 'csrftoken', xrfHeaderName: 'X-CSRFToken'})
+                .then((response) => {
+                    if(response.data.message) {
+                        alert(response.data.message);
+                    }
+                    checkedData = [];
+                    axios.get('/main/customerlist/gridlist')
+                    .then(resultData);
+                })
+                .catch((error) => {
+                });
+            }
+        }
+        customerlistGrid.on('beforChange', e => {
+            // console.log('beforChange :', e);
+        });
+
+        customerlistGrid.on('afterChange', e => {
+            const id = customerlistResult[e.changes[0].rowKey].id;
+            const customer_name = customerlistResult[e.changes[0].rowKey].customer_name;
+            const key = e.changes[0].columnName;
+            const value = e.changes[0].value;
+
+            let requestData = {};
+            requestData.id = id;
+            requestData.customer_name = customer_name;
+            requestData[key] = value;
+            axios.post('/main/customerList/modify/', requestData, {xsrfCookieName: 'csrftoken', xrfHeaderName: 'X-CSRFToken'})
+            .then((response) => {
+            })
+            .catch((error) => {
+            });
+        })
+    </script>
+{% endblock %}

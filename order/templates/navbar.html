@@ -23,6 +23,11 @@
                 </li>
                 <li>
                     {% if user.is_authenticated %}
+                    <a class="nav-link" href="{% url 'main:customer_index' %}">고객 관리</a>
+                    {% endif %}
+                </li>
+                <li>
+                    {% if user.is_authenticated %}
                     <a class="nav-link" href="{% url 'main:orderlist_index' %}">주문서</a>
                     {% endif %}
                 </li>

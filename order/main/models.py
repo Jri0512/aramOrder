@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 
 # Create your models here.
 
@@ -34,11 +34,13 @@ class OrderInfo(models.Model):
     author = models.ForeignKey(
         User, on_delete=models.PROTECT, related_name='author_orderInfo')
     customer = models.ForeignKey(
-        Customer, on_delete=models.PROTECT, related_name='customer_orderinfo')
+        Customer, on_delete=models.CASCADE, related_name='customer_orderinfo')
     payment_method = models.ForeignKey(
         AramCode, on_delete=models.PROTECT, related_name='payment_orderinfo')
     shipping_type = models.ForeignKey(
         AramCode, on_delete=models.PROTECT, related_name='shipping_orderinfo')
+    store_place = models.ForeignKey(
+        Group, on_delete=models.PROTECT, related_name='store_orderinfo', default=1)
     create_date = models.DateTimeField(auto_now=True)
     modify_date = models.DateTimeField(auto_now=True, null=True, blank=True)
 

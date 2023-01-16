@@ -2,6 +2,23 @@
 {% load humanize %}
 {% block content %}
 <div class="container my-3">
+    <div class="row">
+        <div class="form-group mb-3" style="width: 15.5%; margin-left: 68%; padding-left: 8px;">
+        <label for="storePlace" class="control-label">점포명</label>
+                <input type="text" readonly id="storePlace" class="form-control text-center" value={{storePlace}}>
+        </div>
+        <div class="form-group mb-3" style="width: 15.5%; margin-left: auto; padding-left: 8px;">
+            <!-- <div class="col-md-9"></div>
+            <div class="col-md-3"> -->
+                <label for="datePicker" class="control-label">일자</label>
+                {% if orderDate %}
+                <input type="text" id="datePicker" class="form-control text-center" value={{orderDate}}>
+                {% else %}
+                <input type="text" id="datePicker" class="form-control text-center" value='{% now "Y-m-d" %}'/> 
+                {% endif %}            
+            <!-- </div> -->
+        </div>
+    </div>
     {% if orderlistModifySelectResult %}
     <form method="post" action="{% url 'main:orderinfo_modify' orderlistModifySelectResult.0.id %}">
         {% csrf_token %}
@@ -104,7 +121,15 @@
         {% if validationError %}
         <strong>{{validationError}}</strong>
         {% endif %}
+    {% now "Y-m-d" as todays_date %}
+    {% if orderDate %}
+    {% if todays_date == orderDate %}
     <button type="submit" class="btn btn-primary my-3" style="float:right;" onclick="location.reload();">주문등록</button>    
+    {% endif %}
+    {% else %}
+    <button type="submit" class="btn btn-primary my-3" style="float:right;" onclick="location.reload();">주문등록</button>    
+    {% endif %}
+    <button type="submit" style="visibility:hidden;">주문등록</button>    
     </form>
     {% else %}
     <div class="text-center">출력할 주문서 정보가 없습니다.</div>
@@ -141,8 +166,12 @@
             </tr>
             <tr class="text-center">
                 <td class="border-3 border-dark" style="width:10%;">남은수량</td>
-                {% for fruitlist in fruitlist_list %}    
-                <td class="border-3 border-top-0 border-dark" style="border-top:1px solid !important;">{{ fruitlist.stock }}</td>
+                {% for fruitlist in fruitlist_list %}
+                {% if fruitlist.stock <= 5%}    
+                <td class="table-danger border-3 border-top-0 border-dark " style="border-top:1px solid !important;">{{ fruitlist.stock }}</td>
+                {% elif fruitlist.stock >= 6 %}
+                <td class="border-3 border-top-0 border-dark " style="border-top:1px solid !important;">{{ fruitlist.stock }}</td>
+                {% endif %}
                 {% endfor %}
             </tr>
         </thead>
@@ -156,7 +185,16 @@
             <tr class="text-center"> 
             {% endif %}
                 <td colspan="2" class="border-3 border-top-0 border-bottom-0 border-dark">
+                    {% now "Y-m-d" as todays_date %}
+                    {% if orderDate %}
+                    {% if todays_date == orderDate %}
                     <a href="{% url 'main:orderinfo_modify_select' orderlist.id %}">{{orderlist.cn}}</a><div style="font-size:3px;">{{orderlist.pmn}}/{{orderlist.stn}}</div>
+                    {% elif todays_date != orderDate %}
+                    <div>{{orderlist.cn}}</div><div style="font-size:3px;">{{orderlist.pmn}}/{{orderlist.stn}}</div>
+                    {% endif %}
+                    {% else %}
+                    <a href="{% url 'main:orderinfo_modify_select' orderlist.id %}">{{orderlist.cn}}</a><div style="font-size:3px;">{{orderlist.pmn}}/{{orderlist.stn}}</div>
+                    {% endif %}
                 </td>
                 {% for quantity in orderlist.oq %}
                 <td>{{quantity|default_if_none:'0'}}</td>
@@ -169,6 +207,11 @@
     </table>
 </div>
 <script type="text/javascript">
+    
+    // datepicker default date declare
+    // $(function(){
+    //     $('#datePicker').val(moment().format('YYYY-MM-DD'));
+    // });
 
     document.getElementsByName("reload").onclick = function () {
         
@@ -186,5 +229,35 @@
             });
         }
     }
+
+    
+    // datepicker option config
+    $('#datePicker').datepicker({
+        format: 'yyyy-mm-dd',
+        days: ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'],
+        daysShort: ['일', '월', '화', '수', '목', '금', '토'],
+        daysMin: ['일', '월', '화', '수', '목', '금', '토'],
+        months: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+        monthsShort: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+        weekStart: 1,
+        yearFirst: true,
+        yearSuffix: '년',
+        endDate: moment().format('YYYY-MM-DD'),
+    })
+    // datepicker onChange event
+    $('#datePicker').change(function(){
+        let dateValue = {};
+        select_date = $('#datePicker').val()
+
+        location.href = '/main/orderlist/select/' + select_date;
+
+        // axios.get('/main/orderlist/', {params: dateValue})
+        //         .then((response) => {
+        //             console.log(response);
+        //         })
+        //         .catch((error) => {
+        //             // console.log(error);
+        //         });
+    })
 </script>
 {% endblock %}
